@@ -1,0 +1,13 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+- name: test
+  image: python:3.9-slim
+  commands:
+  - python -m pip install pip -U
+  - python -m pip install -r requirements.txt
+  - python -m pip install -r requirements-dev.txt
+  - mypy --install-types --non-interactive .
+  - pytest
