@@ -1,5 +1,7 @@
 """Функции выполняющие основные задачи системы."""
 
+from typing import Optional
+
 from flask import current_app
 
 from core.models import Post, db
@@ -18,21 +20,24 @@ def create_new_post(post_alias: str, post_title: str, post_text: str) -> Post:
         new_post = Post(alias=post_alias, title=post_title, text=post_text)
         db.session.add(new_post)
         db.session.commit()
-    return new_post
+        created_post = Post.query.get(new_post.id)
+    return created_post
 
 
-def update_post(old_post_alias: str, new_post_alias: str, post_title: str, post_text: str) -> bool:
+def update_post(old_post_alias: str, new_post_alias: str, post_title: str, post_text: str) -> Optional[Post]:
     """Обновит информацию в указанном посте."""
     with current_app.app_context():
         post_for_update: Post = Post.query.filter_by(alias=old_post_alias, is_deleted=False).first()
         if post_for_update is None:
-            return False
+            return None
 
         post_for_update.alias = new_post_alias
         post_for_update.title = post_title
         post_for_update.text = post_text
         db.session.commit()
-    return True
+
+        updated_post = Post.query.get(post_for_update.id)
+    return updated_post
 
 
 def mark_post_deleted(post_alias: str) -> bool:
