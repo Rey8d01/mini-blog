@@ -3,8 +3,7 @@ pip:
 	python -m pip install -r requirements.txt -U
 
 pip-dev:
-	python -m pip install pip -U
-	python -m pip install -r requirements.txt -U
+	make pip
 	python -m pip install -r requirements-dev.txt -U
 
 lint:
@@ -18,7 +17,9 @@ prepare:
 	make test
 
 serve:
-	export FLASK_APP=main && flask run
+	export FLASK_APP=main && \
+	export FLASK_ENV=development && \
+	flask run
 
 gunicorn:
 	gunicorn main:app -b 0.0.0.0:5000 -w 2 --log-level error --access-logfile - --max-requests 500
