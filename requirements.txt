@@ -1,4 +1,5 @@
-Flask==2.0.2
+dynaconf==3.1.5
 gunicorn==20.1.0
+Flask==2.0.2
 flask-smorest==0.35.0
 Flask-SQLAlchemy==2.5.1

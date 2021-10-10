@@ -1,0 +1,15 @@
+# Общие настройки.
+[default]
+title = "Mini blog"
+# DB
+SQLALCHEMY_DATABASE_URI = "sqlite:///./tmp/blog.db"
+SQLALCHEMY_TRACK_MODIFICATIONS = false
+# REST
+API_TITLE = "Mini blog API"
+API_VERSION = "v1"
+OPENAPI_VERSION = "3.0.2"
+
+# Настройки для запуска тестов.
+[testing]
+TESTING = true
+SQLALCHEMY_DATABASE_URI = "sqlite:///./tmp/test.db"
