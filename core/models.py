@@ -9,6 +9,7 @@ db = SQLAlchemy()
 
 class Post(db.Model):  # type: ignore[name-defined]
     """Пост в блоге."""
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     alias = db.Column(db.String(120), unique=True, nullable=False)

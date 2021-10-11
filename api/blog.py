@@ -12,6 +12,7 @@ blog_blueprint = Blueprint("blog", __name__, url_prefix="/blog", description="Bl
 
 class PostSchema(ma.Schema):
     """Схема поста в блоге для отображения клиенту."""
+
     id = ma.fields.Int(dump_only=True)
     alias = ma.fields.String()
     title = ma.fields.String()
@@ -22,11 +23,13 @@ class PostSchema(ma.Schema):
 
 class PostQuerySchema(ma.Schema):
     """Схема для параметров запроса поста."""
+
     alias = ma.fields.String()
 
 
 class PostArgsSchema(ma.Schema):
     """Схема для создания нового поста."""
+
     alias = ma.fields.String()
     title = ma.fields.String()
     text = ma.fields.String()
@@ -34,6 +37,8 @@ class PostArgsSchema(ma.Schema):
 
 @blog_blueprint.route("/posts")
 class Posts(MethodView):
+    """Постраничная выдача постов."""
+
     @blog_blueprint.arguments(PostQuerySchema, location="query")
     @blog_blueprint.response(200, PostSchema(many=True))
     def get(self, args):
@@ -43,6 +48,8 @@ class Posts(MethodView):
 
 @blog_blueprint.route("/create-post")
 class CreatePost(MethodView):
+    """Создание нового поста."""
+
     @blog_blueprint.arguments(PostArgsSchema)
     @blog_blueprint.response(201, PostSchema)
     def post(self, new_post_data: dict):
@@ -55,6 +62,8 @@ class CreatePost(MethodView):
 
 @blog_blueprint.route("/<post_alias>")
 class PostByAlias(MethodView):
+    """Работа с существующим постов в блоге по его псевдониму."""
+
     @blog_blueprint.response(200, PostSchema)
     def get(self, post_alias: str):
         """Вернет неудаленный пост в блоге по его псевдониму."""
@@ -71,7 +80,7 @@ class PostByAlias(MethodView):
             old_alias=post_alias,
             new_alias=update_post_data["alias"],
             new_title=update_post_data["title"],
-            new_text=update_post_data["text"]
+            new_text=update_post_data["text"],
         )
         if updated_post is None:
             abort(404, message="Post not found.")
