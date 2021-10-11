@@ -1,6 +1,5 @@
 # Общие настройки.
 [default]
-title = "Mini blog"
 # DB
 SQLALCHEMY_DATABASE_URI = "sqlite:///./tmp/blog.db"
 SQLALCHEMY_TRACK_MODIFICATIONS = false

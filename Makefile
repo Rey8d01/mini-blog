@@ -16,15 +16,17 @@ prepare:
 	make lint
 	make test
 
-serve:
+startup:
+	python startup.py
 	export FLASK_APP=main && flask openapi write ./tmp/openapi.json
+
+serve:
 	export FLASK_APP=main && export FLASK_ENV=development && flask run
 
 gunicorn:
-	export FLASK_APP=main && flask openapi write ./tmp/openapi.json
-	gunicorn main:app -b 0.0.0.0:5000 -w 2 --log-level error --access-logfile - --max-requests 500
+	gunicorn 'main:create_app()' -b 0.0.0.0:5000 -w 2 --log-level error --access-logfile - --max-requests 500
 
 docker:
 	docker build -t local/mini-blog:0.1.0 .
 	docker volume create mini-blog-tmp
-	docker run --rm -it -v mini-blog-tmp:/usr/src/app/tmp -p 5000:80 --name=mini-blog local/mini-blog:0.1.0
+	docker run --rm -it -v mini-blog-tmp:/usr/src/app/tmp -p 5000:80 --env FLASK_DEBUG=0 --name=mini-blog local/mini-blog:0.1.0
