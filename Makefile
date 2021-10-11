@@ -17,11 +17,11 @@ prepare:
 	make test
 
 serve:
-	export FLASK_APP=main && \
-	export FLASK_ENV=development && \
-	flask run
+	export FLASK_APP=main && flask openapi write ./tmp/openapi.json
+	export FLASK_APP=main && export FLASK_ENV=development && flask run
 
 gunicorn:
+	export FLASK_APP=main && flask openapi write ./tmp/openapi.json
 	gunicorn main:app -b 0.0.0.0:5000 -w 2 --log-level error --access-logfile - --max-requests 500
 
 docker:

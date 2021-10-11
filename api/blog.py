@@ -3,6 +3,8 @@
 import marshmallow as ma
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
+from flask_smorest.pagination import PaginationParameters
+from marshmallow import validate
 
 from core.models import Post
 from core.use_cases import create_new_post, update_post, mark_post_deleted
@@ -24,14 +26,14 @@ class PostSchema(ma.Schema):
 class PostQuerySchema(ma.Schema):
     """Схема для параметров запроса поста."""
 
-    alias = ma.fields.String()
+    alias = ma.fields.String(validate=validate.Length(max=120))
 
 
 class PostArgsSchema(ma.Schema):
     """Схема для создания нового поста."""
 
-    alias = ma.fields.String()
-    title = ma.fields.String()
+    alias = ma.fields.String(validate=validate.Length(max=120))
+    title = ma.fields.String(validate=validate.Length(max=200))
     text = ma.fields.String()
 
 
@@ -39,11 +41,16 @@ class PostArgsSchema(ma.Schema):
 class Posts(MethodView):
     """Постраничная выдача постов."""
 
-    @blog_blueprint.arguments(PostQuerySchema, location="query")
     @blog_blueprint.response(200, PostSchema(many=True))
-    def get(self, args):
+    @blog_blueprint.paginate(page=1, page_size=10, max_page_size=20)
+    def get(self, pagination_parameters: PaginationParameters):
         """Список постов в блоге."""
-        return Post.get(filters=args)
+        interesting_posts = Post \
+            .query \
+            .filter_by(is_deleted=False) \
+            .order_by(Post.created.desc()) \
+            .paginate(pagination_parameters.page, pagination_parameters.page_size, max_per_page=20)
+        return interesting_posts.items
 
 
 @blog_blueprint.route("/create-post")
