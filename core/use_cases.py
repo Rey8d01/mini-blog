@@ -1,14 +1,13 @@
 """Функции выполняющие основные задачи системы."""
 
-from typing import Optional
-
 import sqlalchemy.exc
 from flask import current_app
 
+from core.exceptions import PostException
 from core.models import Post, db
 
 
-def create_new_post(alias: str, title: str, text: str) -> Optional[Post]:
+def create_new_post(alias: str, title: str, text: str) -> Post:
     """Сохранит новый пост в блоге."""
     with current_app.app_context():
         new_post = Post(alias=alias, title=title, text=text)
@@ -16,17 +15,17 @@ def create_new_post(alias: str, title: str, text: str) -> Optional[Post]:
         try:
             db.session.commit()
         except sqlalchemy.exc.IntegrityError:
-            return None
+            raise PostException("Post cannot be created")
         created_post = Post.query.get(new_post.id)
     return created_post
 
 
-def update_post(old_alias: str, new_alias: str, new_title: str, new_text: str) -> Optional[Post]:
+def update_post(old_alias: str, new_alias: str, new_title: str, new_text: str) -> Post:
     """Обновит информацию в указанном посте."""
     with current_app.app_context():
         post_for_update: Post = Post.query.filter_by(alias=old_alias, is_deleted=False).first()
         if post_for_update is None:
-            return None
+            raise PostException("Undefined post")
 
         post_for_update.alias = new_alias
         post_for_update.title = new_title
@@ -34,7 +33,7 @@ def update_post(old_alias: str, new_alias: str, new_title: str, new_text: str) -
         try:
             db.session.commit()
         except sqlalchemy.exc.IntegrityError:
-            return None
+            raise PostException("Post cannot be updated")
 
         updated_post = Post.query.get(post_for_update.id)
     return updated_post
@@ -45,7 +44,7 @@ def mark_post_deleted(alias: str) -> bool:
     with current_app.app_context():
         post_for_delete: Post = Post.query.filter_by(alias=alias, is_deleted=False).first()
         if post_for_delete is None:
-            return False
+            raise PostException("Undefined post")
 
         post_for_delete.is_deleted = True
         db.session.commit()

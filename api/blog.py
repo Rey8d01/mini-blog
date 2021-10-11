@@ -6,6 +6,7 @@ from flask_smorest import Blueprint, abort
 from flask_smorest.pagination import PaginationParameters
 from marshmallow import validate
 
+from core.exceptions import PostException
 from core.models import Post
 from core.use_cases import create_new_post, update_post, mark_post_deleted
 
@@ -61,10 +62,11 @@ class CreatePost(MethodView):
     @blog_blueprint.response(201, PostSchema)
     def post(self, new_post_data: dict):
         """Добавление нового поста в блог."""
-        new_post = create_new_post(**new_post_data)
-        if new_post is None:
-            abort(400, message="Invalid data for new post.")
-        return new_post
+        try:
+            new_post = create_new_post(**new_post_data)
+            return new_post
+        except PostException as error:
+            abort(400, message=f"Post error: {error}.")
 
 
 @blog_blueprint.route("/<post_alias>")
@@ -83,15 +85,16 @@ class PostByAlias(MethodView):
     @blog_blueprint.response(200, PostSchema)
     def put(self, update_post_data: dict, post_alias: str):
         """Обновление существующего поста в блоге."""
-        updated_post = update_post(
-            old_alias=post_alias,
-            new_alias=update_post_data["alias"],
-            new_title=update_post_data["title"],
-            new_text=update_post_data["text"],
-        )
-        if updated_post is None:
-            abort(404, message="Post not found.")
-        return updated_post
+        try:
+            updated_post = update_post(
+                old_alias=post_alias,
+                new_alias=update_post_data["alias"],
+                new_title=update_post_data["title"],
+                new_text=update_post_data["text"],
+            )
+            return updated_post
+        except PostException as error:
+            abort(404, message=f"Post error: {error}.")
 
     @blog_blueprint.response(204)
     def delete(self, post_alias: str):
