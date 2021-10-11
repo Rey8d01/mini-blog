@@ -7,43 +7,36 @@ from flask import current_app
 from core.models import Post, db
 
 
-def slice_posts():
-    """Вернет срез постов блога на указанной странице."""
-    with current_app.app_context():
-        posts = Post.query.filter_by(is_deleted=False).all()
-    return posts
-
-
-def create_new_post(post_alias: str, post_title: str, post_text: str) -> Post:
+def create_new_post(alias: str, title: str, text: str) -> Post:
     """Сохранит новый пост в блоге."""
     with current_app.app_context():
-        new_post = Post(alias=post_alias, title=post_title, text=post_text)
+        new_post = Post(alias=alias, title=title, text=text)
         db.session.add(new_post)
         db.session.commit()
         created_post = Post.query.get(new_post.id)
     return created_post
 
 
-def update_post(old_post_alias: str, new_post_alias: str, post_title: str, post_text: str) -> Optional[Post]:
+def update_post(old_alias: str, new_alias: str, new_title: str, new_text: str) -> Optional[Post]:
     """Обновит информацию в указанном посте."""
     with current_app.app_context():
-        post_for_update: Post = Post.query.filter_by(alias=old_post_alias, is_deleted=False).first()
+        post_for_update: Post = Post.query.filter_by(alias=old_alias, is_deleted=False).first()
         if post_for_update is None:
             return None
 
-        post_for_update.alias = new_post_alias
-        post_for_update.title = post_title
-        post_for_update.text = post_text
+        post_for_update.alias = new_alias
+        post_for_update.title = new_title
+        post_for_update.text = new_text
         db.session.commit()
 
         updated_post = Post.query.get(post_for_update.id)
     return updated_post
 
 
-def mark_post_deleted(post_alias: str) -> bool:
+def mark_post_deleted(alias: str) -> bool:
     """Выполнит операцию удаления поста."""
     with current_app.app_context():
-        post_for_delete: Post = Post.query.filter_by(alias=post_alias, is_deleted=False).first()
+        post_for_delete: Post = Post.query.filter_by(alias=alias, is_deleted=False).first()
         if post_for_delete is None:
             return False
 
