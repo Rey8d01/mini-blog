@@ -2,17 +2,21 @@
 
 from typing import Optional
 
+import sqlalchemy.exc
 from flask import current_app
 
 from core.models import Post, db
 
 
-def create_new_post(alias: str, title: str, text: str) -> Post:
+def create_new_post(alias: str, title: str, text: str) -> Optional[Post]:
     """Сохранит новый пост в блоге."""
     with current_app.app_context():
         new_post = Post(alias=alias, title=title, text=text)
         db.session.add(new_post)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except sqlalchemy.exc.IntegrityError:
+            return None
         created_post = Post.query.get(new_post.id)
     return created_post
 
@@ -27,7 +31,10 @@ def update_post(old_alias: str, new_alias: str, new_title: str, new_text: str) -
         post_for_update.alias = new_alias
         post_for_update.title = new_title
         post_for_update.text = new_text
-        db.session.commit()
+        try:
+            db.session.commit()
+        except sqlalchemy.exc.IntegrityError:
+            return None
 
         updated_post = Post.query.get(post_for_update.id)
     return updated_post

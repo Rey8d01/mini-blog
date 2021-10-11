@@ -42,12 +42,15 @@ class Posts(MethodView):
 
 
 @blog_blueprint.route("/create-post")
-class Posts(MethodView):
+class CreatePost(MethodView):
     @blog_blueprint.arguments(PostArgsSchema)
     @blog_blueprint.response(201, PostSchema)
-    def post(self, new_post_data):
+    def post(self, new_post_data: dict):
         """Добавление нового поста в блог."""
-        return create_new_post(**new_post_data)
+        new_post = create_new_post(**new_post_data)
+        if new_post is None:
+            abort(400, message="Invalid data for new post.")
+        return new_post
 
 
 @blog_blueprint.route("/<post_alias>")
@@ -62,9 +65,14 @@ class PostByAlias(MethodView):
 
     @blog_blueprint.arguments(PostArgsSchema)
     @blog_blueprint.response(200, PostSchema)
-    def put(self, update_post_data, post_alias: str):
+    def put(self, update_post_data: dict, post_alias: str):
         """Обновление существующего поста в блоге."""
-        updated_post = update_post(old_alias=post_alias, **update_post_data)
+        updated_post = update_post(
+            old_alias=post_alias,
+            new_alias=update_post_data["alias"],
+            new_title=update_post_data["title"],
+            new_text=update_post_data["text"]
+        )
         if updated_post is None:
             abort(404, message="Post not found.")
         return updated_post
